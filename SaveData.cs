@@ -13,12 +13,17 @@ public class SaveData : MonoBehaviour
     public static SaveData instance;
 
     GameManager gameManager;
+
+    Timer timer;
     StatSystem stats;
     Player playerScript;
 
     private void Awake()
     {
+        SaveSystem.DeleteQuickSave();
+
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        timer = gameManager.GetComponent<Timer>();
         stats = gameManager.importantTransforms["Player"].GetComponent<StatSystem>();
         playerScript = gameManager.importantTransforms["Player"].GetComponent<Player>();
 
@@ -29,12 +34,12 @@ public class SaveData : MonoBehaviour
         else if (instance == null)
         {
             instance = this;
+            DontDestroyOnLoad(gameObject);
 
             SaveSystem.Init();
 
             Load("MostRecent", false, false);
             LoadSettings("settings");
-            DontDestroyOnLoad(gameObject);
             UpdateSaveSlots();
             UpdateLevelButtons();
         }
@@ -46,7 +51,7 @@ public class SaveData : MonoBehaviour
 
     public void Save(string fileName, bool overWrite)
     {
-        gameManager.UpdateImportantTransforms(false);
+        gameManager.UpdateImportantTransforms();
 
         SaveObject saveObject = new SaveObject
         {
@@ -58,9 +63,8 @@ public class SaveData : MonoBehaviour
             playerInfo = TransformToInfo(gameManager.importantTransforms["Player"]),
             enemiesInfo = TransformsToInfo(gameManager.importantTransforms["Enemies"]),
             interactablesInfo = TransformsToInfo(gameManager.importantTransforms["Interactables"]),
-            minutesRemaining = stats.minutesRemaining,
-            secondsRemaining = stats.secondsRemaining,
-            timeRemaining = stats.timeRemaining
+            minutesRemaining = timer.minutesRemaining,
+            secondsRemaining = timer.secondsRemaining
         };
 
         string json = JsonConvert.SerializeObject(saveObject, Formatting.Indented);
@@ -73,17 +77,17 @@ public class SaveData : MonoBehaviour
 
     public void QuickSave()
     {
-        gameManager.UpdateImportantTransforms(false);
+        gameManager.UpdateImportantTransforms();
 
         SaveObject saveObject = new SaveObject
         {
             playerInfo = TransformToInfo(gameManager.importantTransforms["Player"]),
             enemiesInfo = TransformsToInfo(gameManager.importantTransforms["Enemies"]),
             interactablesInfo = TransformsToInfo(gameManager.importantTransforms["Interactables"]),
-            minutesRemaining = stats.minutesRemaining,
-            secondsRemaining = stats.secondsRemaining,
-            timeRemaining = stats.timeRemaining
+            minutesRemaining = timer.minutesRemaining,
+            secondsRemaining = timer.secondsRemaining
         };
+        Debug.Log(timer.minutesRemaining + ":" + timer.secondsRemaining);
 
         string json = JsonConvert.SerializeObject(saveObject, Formatting.Indented);
 
@@ -95,7 +99,7 @@ public class SaveData : MonoBehaviour
         Settings settings = new Settings
         {
             mouseSensitivity = gameManager.importantTransforms["Player"].GetComponent<Player>().mouseSensitivity,
-            fov = gameManager.importantTransforms["Player"].GetComponent<Camera>().fieldOfView,
+            fov = gameManager.importantTransforms["Main Camera"].GetComponent<Camera>().fieldOfView,
             keys = gameManager.importantTransforms["Player"].GetComponent<Player>().keys
         };
 
@@ -120,6 +124,7 @@ public class SaveData : MonoBehaviour
             {
                 if (updateTransforms)
                 {
+                    gameManager.UpdateImportantTransforms();
                     //Updating player
                     stats.health = saveObject.playerInfo.health;
                     stats.stamina = saveObject.playerInfo.stamina;
@@ -135,9 +140,8 @@ public class SaveData : MonoBehaviour
                         UpdateTransforms(saveObject.interactablesInfo, gameManager.importantTransforms["Interactables"]);
                 }
 
-                stats.timeRemaining = saveObject.timeRemaining;
-                stats.minutesRemaining = saveObject.minutesRemaining;
-                stats.secondsRemaining = saveObject.secondsRemaining;
+                timer.minutesRemaining = saveObject.minutesRemaining;
+                timer.secondsRemaining = saveObject.secondsRemaining;
 
                 foreach (string key in saveObject.highScores.Keys)
                 {
@@ -168,9 +172,6 @@ public class SaveData : MonoBehaviour
 
     public void QuickLoad()
     {
-        playerScript.disableInput = true;
-        playerScript.disableMovement = true;
-
         string json = SaveSystem.QuickLoad();
 
         if(json != null)
@@ -191,12 +192,9 @@ public class SaveData : MonoBehaviour
             if (saveObject.interactablesInfo != null)
                 UpdateTransforms(saveObject.interactablesInfo, GameObject.Find("Interactables").transform);
 
-            stats.timeRemaining = saveObject.timeRemaining;
-            stats.minutesRemaining = saveObject.minutesRemaining;
-            stats.secondsRemaining = saveObject.secondsRemaining;
+            timer.minutesRemaining = saveObject.minutesRemaining;
+            timer.secondsRemaining = saveObject.secondsRemaining;
         }
-
-        playerScript.disableInput = false;
     }
 
     public void LoadSettings(string fileName)
@@ -361,7 +359,6 @@ public class SaveData : MonoBehaviour
         public List<TransformInfo> interactablesInfo;
         public float minutesRemaining;
         public float secondsRemaining;
-        public float timeRemaining;
     }
 
     private class Settings

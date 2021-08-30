@@ -10,6 +10,7 @@ public class UISystem : MonoBehaviour
     GameManager gameManager;
     GameObject sceneLoader;
 
+    Timer timer;
     StatSystem stats;
     SaveData saveData;
 
@@ -33,6 +34,7 @@ public class UISystem : MonoBehaviour
         }
 
         scene = SceneManager.GetActiveScene();
+        timer = gameManager.GetComponent<Timer>();
         stats = gameManager.importantTransforms["Player"].GetComponent<StatSystem>();
         saveData = sceneLoader.GetComponent<SaveData>();
 
@@ -62,9 +64,17 @@ public class UISystem : MonoBehaviour
         if (!inMainMenuScene)
         {
             //Updating timer
-            gameManager.importantTransforms["Timer"].GetComponent<Text>().text = stats.timeText;
-
+            gameManager.importantTransforms["Timer"].GetComponent<Text>().text = timer.timeText;
+            //Updating Enemies left
             gameManager.importantTransforms["Enemies Left"].GetComponent<Text>().text = GameObject.FindGameObjectsWithTag("Hostile").Length + " Enemies Left";
+
+            //Game over when time runs out
+            if(timer.timeRemaining <= 0)
+            {
+                gameManager.importantTransforms["Game Over"].gameObject.SetActive(true);
+                gameManager.importantTransforms["Game Over"].Find("Text").GetComponent<Text>().text = "GAME OVER\nScore: " + stats.score;
+                GameTime(0);
+            }
 
             //Game over when at 0 health
             if (stats.health <= 0)

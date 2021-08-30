@@ -10,9 +10,6 @@ public class SceneLoader : MonoBehaviour
 
     public IEnumerator LoadScene(int sceneIndex, bool updateTransforms, bool createSave)
     {
-        Debug.Log("LoadScene");
-        SaveSystem.DeleteQuickSave();
-
         if (loadingScreen == null)
         {
             loadingScreen = GameObject.Find("UI").transform.Find("Loading Screen");
@@ -21,23 +18,27 @@ public class SceneLoader : MonoBehaviour
 
         loadingScreen.gameObject.SetActive(true);
 
-        while (!asyncLoad.isDone)
+        //Changed !asyncLoad.isDone to progress because the former doesn't let code after the loop run
+        float progress = 0;
+        while (progress < 1)
         {
-            Debug.Log(asyncLoad.progress);
-            float progress = Mathf.Clamp01(asyncLoad.progress / .9f);
+            progress = Mathf.Clamp01(asyncLoad.progress / .9f);
 
             loadingScreen.Find("Slider").GetComponent<Slider>().value = progress;
             loadingScreen.Find("Text").GetComponent<Text>().text = progress * 100 + "%";
 
             yield return null;
-            Debug.Log("After yield");
         }
-        Debug.Log("Loaded");
+        StartCoroutine(AfterLoad(updateTransforms, createSave));
+    }
 
-        yield return new WaitForSecondsRealtime(0.1f);
+    //Split the coroutine because Unity kills all coroutines on scene load and there's nothing I can do about that
+    IEnumerator AfterLoad(bool updateTransforms, bool createSave)
+    {
+        yield return new WaitForSecondsRealtime(0.2f);
+
         if (createSave)
         {
-            Debug.Log("NewSave");
             GetComponent<SaveData>().Save("save", false);
         }
         else

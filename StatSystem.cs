@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class StatSystem : MonoBehaviour
 {
+    Timer timer;
+
     public float walkSpeed = 2;
     public float runSpeed = 4;
     public float speedMultiplier = 1;
@@ -17,17 +19,14 @@ public class StatSystem : MonoBehaviour
     public float score;
     public Dictionary<string, float> highScores = new Dictionary<string, float>();
     public List<string> inventory = new List<string>();
-    public float minutesRemaining = 5;
-    public float secondsRemaining = 0;
-    public float timeRemaining { get; set; }
-    public string timeText { get; set; }
 
     public bool isPlayer = false;
 
     // Start is called before the first frame update
     void Awake()
     {
-        timeRemaining = secondsRemaining + minutesRemaining * 60;
+        timer = GameObject.Find("GameManager").GetComponent<Timer>();
+
         score = 0;
     }
 
@@ -36,16 +35,7 @@ public class StatSystem : MonoBehaviour
     {
         if (isPlayer)
         {
-            if (timeRemaining > 0)
-            {
-                timeRemaining -= Time.deltaTime;
-            }
-            minutesRemaining = Mathf.FloorToInt(timeRemaining / 60);
-            secondsRemaining = Mathf.FloorToInt(timeRemaining % 60);
-
-            timeText = string.Format("{0:00}:{1:00}", minutesRemaining, secondsRemaining);
-
-            score = Mathf.Round((health + timeRemaining) * 100) / 100;
+            score = Mathf.Round((health + timer.timeRemaining) * 100) / 100;
         }
     }
 }

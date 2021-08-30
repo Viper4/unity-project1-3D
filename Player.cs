@@ -79,6 +79,22 @@ public class Player : MonoBehaviour
         Vector2 input = new Vector2(GetInputAxis("Horizontal"), GetInputAxis("Vertical"));
         Vector2 inputDir = input.normalized;
 
+        if (Input.GetKeyDown(keys["Quick Save"]))
+        {
+            sceneLoader.GetComponent<SaveData>().QuickSave();
+            StartCoroutine(gameManager.importantTransforms["UI"].GetComponent<UISystem>().TextPrompt("Quick Saved", 0.5f));
+        }
+        else if (Input.GetKeyDown(keys["Quick Load"]))
+        {
+            disableMovement = true;
+            sceneLoader.GetComponent<SaveData>().QuickLoad();
+            StartCoroutine(gameManager.importantTransforms["UI"].GetComponent<UISystem>().TextPrompt("Quick Loaded", 0.5f));
+        }
+        else if (Input.GetKeyDown(keys["Inventory"]))
+        {
+            gameManager.importantTransforms["UI"].GetComponent<UISystem>().ToggleInventory();
+        }
+
         if (!disableInput)
         {
             yaw += Input.GetAxis("Mouse X") * mouseSensitivity;
@@ -132,19 +148,6 @@ public class Player : MonoBehaviour
             Move(inputDir, GetKeys(runningKeys), Input.GetKey(keys["Crouch"]));
         }
 
-        if (Input.GetKeyDown(keys["Quick Save"]))
-        {
-            sceneLoader.GetComponent<SaveData>().QuickSave();
-        }
-        else if(Input.GetKeyDown(keys["Quick Load"]))
-        {
-            sceneLoader.GetComponent<SaveData>().QuickLoad();
-        }
-        else if(Input.GetKeyDown(keys["Inventory"]))
-        {
-            gameManager.importantTransforms["UI"].GetComponent<UISystem>().ToggleInventory();
-        }
-
         if(regenStamina)
         {
             stats.stamina = currentSpeed < 0.5 ? stats.stamina + 0.1f : stats.stamina + 0.05f;
@@ -160,7 +163,7 @@ public class Player : MonoBehaviour
         }
     }
 
-    //Waiting a small amount of time before enabling movement to stop Move method from teleporting player back to default position (This fix is garbage)
+    //Waiting a small amount of time before enabling movement to stop Move method from teleporting player back to default position
     IEnumerator EnableMovement()
     {
         enablingMovement = true;

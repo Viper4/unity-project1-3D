@@ -9,21 +9,11 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        UpdateImportantTransforms(true);
+        UpdateImportantTransforms();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void UpdateImportantTransforms()
     {
-        
-    }
-
-    public void UpdateImportantTransforms(bool clearDictionary)
-    {
-        if (clearDictionary)
-        {
-            importantTransforms.Clear();
-        }
         ImportantTransform[] allTransforms = FindObjectsOfType<ImportantTransform>();
         foreach (ImportantTransform target in allTransforms)
         {

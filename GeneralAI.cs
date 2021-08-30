@@ -97,10 +97,14 @@ public class GeneralAI : MonoBehaviour
 
     public bool AtEndOfPath()
     {
-        if (navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance)
+        if(navMeshAgent != null)
         {
-            return true;
+            if (navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance)
+            {
+                return true;
+            }
         }
+        
         return false;
     }
 
