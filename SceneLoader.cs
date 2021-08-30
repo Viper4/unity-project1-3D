@@ -8,7 +8,7 @@ public class SceneLoader : MonoBehaviour
 {
     Transform loadingScreen;
 
-    public IEnumerator LoadScene(int sceneIndex, bool updateTransforms)
+    public IEnumerator LoadScene(int sceneIndex, bool updateTransforms, bool createSave)
     {
         Debug.Log("LoadScene");
         SaveSystem.DeleteQuickSave();
@@ -23,18 +23,26 @@ public class SceneLoader : MonoBehaviour
 
         while (!asyncLoad.isDone)
         {
+            Debug.Log(asyncLoad.progress);
             float progress = Mathf.Clamp01(asyncLoad.progress / .9f);
 
             loadingScreen.Find("Slider").GetComponent<Slider>().value = progress;
             loadingScreen.Find("Text").GetComponent<Text>().text = progress * 100 + "%";
 
             yield return null;
+            Debug.Log("After yield");
         }
-        Debug.Log("Loaded Scene");
+        Debug.Log("Loaded");
 
         yield return new WaitForSecondsRealtime(0.1f);
-
-        GetComponent<SaveData>().Load(SaveSystem.currentSaveFileName, false, updateTransforms);
-        
+        if (createSave)
+        {
+            Debug.Log("NewSave");
+            GetComponent<SaveData>().Save("save", false);
+        }
+        else
+        {
+            GetComponent<SaveData>().Load(SaveSystem.currentSaveFileName, false, updateTransforms);
+        }
     }
 }
