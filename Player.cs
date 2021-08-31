@@ -95,16 +95,14 @@ public class Player : MonoBehaviour
             gameManager.importantTransforms["UI"].GetComponent<UISystem>().ToggleInventory();
         }
 
+        yaw += Input.GetAxis("Mouse X") * mouseSensitivity;
+        pitch -= Input.GetAxis("Mouse Y") * mouseSensitivity;
+        pitch = Mathf.Clamp(pitch, pitchMinMax.x, pitchMinMax.y);
+
+        currentRotation = Vector3.SmoothDamp(currentRotation, new Vector3(pitch, yaw), ref rotationSmoothVelocity, rotationSmoothTime);
+
         if (!disableInput)
         {
-            yaw += Input.GetAxis("Mouse X") * mouseSensitivity;
-            pitch -= Input.GetAxis("Mouse Y") * mouseSensitivity;
-            pitch = Mathf.Clamp(pitch, pitchMinMax.x, pitchMinMax.y);
-
-            currentRotation = Vector3.SmoothDamp(currentRotation, new Vector3(pitch, yaw), ref rotationSmoothVelocity, rotationSmoothTime);
-
-            gameManager.importantTransforms["Main Camera"].rotation = Quaternion.Euler(currentRotation.x, transform.eulerAngles.y, transform.eulerAngles.z);
-            transform.rotation = Quaternion.Euler(transform.eulerAngles.x, currentRotation.y, transform.eulerAngles.z);
 
             if (Input.GetKey(keys["Jump"]))
             {
@@ -146,9 +144,12 @@ public class Player : MonoBehaviour
         if (!disableMovement)
         {
             Move(inputDir, GetKeys(runningKeys), Input.GetKey(keys["Crouch"]));
+
+            gameManager.importantTransforms["Main Camera"].rotation = Quaternion.Euler(currentRotation.x, transform.eulerAngles.y, transform.eulerAngles.z);
+            transform.rotation = Quaternion.Euler(transform.eulerAngles.x, currentRotation.y, transform.eulerAngles.z);
         }
 
-        if(regenStamina)
+        if (regenStamina)
         {
             stats.stamina = currentSpeed < 0.5 ? stats.stamina + 0.1f : stats.stamina + 0.05f;
 

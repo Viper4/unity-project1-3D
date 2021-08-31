@@ -26,16 +26,4 @@ public class Timer : MonoBehaviour
 
         timeText = string.Format("{0:00}:{1:00}", minutesRemaining, secondsRemaining);
     }
-
-    public void ResetTimer(float minutes, float seconds)
-    {
-        timeRemaining = minutes * 60 + seconds;
-        minutesRemaining = minutes;
-        secondsRemaining = seconds;
-    }
-
-    public float GetSeconds()
-    {
-        return secondsRemaining;
-    }
 }

@@ -45,5 +45,6 @@ public class SceneLoader : MonoBehaviour
         {
             GetComponent<SaveData>().Load(SaveSystem.currentSaveFileName, false, updateTransforms);
         }
+        GetComponent<SaveData>().OnSceneLoad();
     }
 }
